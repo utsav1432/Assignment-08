@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 function App() {
-  // State variables
   const [tasks, setTasks] = useState([]);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -13,14 +12,22 @@ function App() {
   const [editTitle, setEditTitle] = useState('');
   const [editDescription, setEditDescription] = useState('');
 
-  // API URL - Backend on port 3000
-  const API_URL = 'http://localhost:3000/api/tasks';
+  // ⭐⭐ USE YOUR CORRECT BACKEND URL ⭐⭐
+  const API_URL = 'https://assignment-07-092q.onrender.com/api/tasks';
 
-  // Fetch all tasks from backend
   const fetchTasks = async () => {
     setLoading(true);
-    const response = await axios.get(API_URL);
-    setTasks(response.data.data);
+    console.log('Fetching tasks from:', API_URL);
+    
+    try {
+      const response = await axios.get(API_URL);
+      console.log('Tasks received:', response.data);
+      setTasks(response.data.data);
+    } catch (error) {
+      console.error('Error fetching tasks:', error);
+      alert('Cannot connect to backend. Please check console.');
+    }
+    
     setLoading(false);
   };
 
@@ -38,6 +45,8 @@ function App() {
       return;
     }
 
+    console.log('Creating task with data:', { title, description });
+    
     await axios.post(API_URL, {
       data: { 
         title: title.trim(), 
@@ -60,6 +69,8 @@ function App() {
       return;
     }
 
+    console.log('Updating task:', taskId, { editTitle, editDescription });
+    
     await axios.put(`${API_URL}/${taskId}`, {
       data: { 
         title: editTitle.trim(), 
@@ -74,6 +85,8 @@ function App() {
 
   // Toggle task completion
   const handleToggleComplete = async (taskId, currentStatus) => {
+    console.log('Toggling task:', taskId, 'from', currentStatus, 'to', !currentStatus);
+    
     await axios.put(`${API_URL}/${taskId}`, {
       data: { completed: !currentStatus }
     });
@@ -83,6 +96,8 @@ function App() {
   // Delete task
   const handleDeleteTask = async (taskId) => {
     if (window.confirm('Are you sure you want to delete this task?')) {
+      console.log('Deleting task:', taskId);
+      
       await axios.delete(`${API_URL}/${taskId}`);
       fetchTasks();
       alert('Task deleted successfully!');
@@ -125,7 +140,7 @@ function App() {
   const pendingTasks = totalTasks - completedTasks;
 
   return (
-    <div className="max-w-full overflow-x-hidden bg-gray-900 p-4 md:p-6 overflow-hidden">
+    <div className="min-h-screen bg-gray-950 p-4 md:p-6">
       
       {/* Header */}
       <header className="max-w-6xl mx-auto mb-8">
@@ -133,8 +148,12 @@ function App() {
           📝 To-Do List Application
         </h1>
         <p className="text-center text-gray-300">
-          Full-stack application with React frontend and Node.js/Express/MongoDB backend
+          Backend: <span className="font-bold">https://assignment-07-092q.onrender.com</span>
         </p>
+        <div className="mt-4 text-center text-sm text-gray-300">
+          <p className='mb-2'>API URL: {API_URL}</p>
+          <p>Tasks loaded: {totalTasks}</p>
+        </div>
       </header>
 
       <main className="max-w-6xl mx-auto">
@@ -168,12 +187,13 @@ function App() {
               </div>
             </div>
 
+
             <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
               <h2 className="text-2xl font-bold text-gray-800 mb-4 text-center">Add New Task</h2>
               
               <form onSubmit={handleCreateTask}>
                 <div className="mb-4">
-                  <label className="block text-gray-700 mb-2">Title *</label>
+                  <label className="block text-gray-700 mb-2 font-bold">Title :</label>
                   <input
                     type="text"
                     value={title}
@@ -187,7 +207,7 @@ function App() {
                 </div>
                 
                 <div className="mb-4">
-                  <label className="block text-gray-700 mb-2">Description</label>
+                  <label className="block text-gray-700 mb-2 font-bold">Description :</label>
                   <textarea
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
@@ -215,12 +235,14 @@ function App() {
               
               {/* Controls Section */}
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-                <h2 className="text-2xl font-bold text-gray-800 text-center">Task List</h2>
+                <h2 className="text-2xl font-bold text-gray-800">
+                  Task List ({totalTasks} tasks)
+                </h2>
                 
                 <div className="flex items-center gap-2">
                   <button
                     onClick={fetchTasks}
-                    className="px-4 py-2 bg-blue-500 text-gray-200 rounded-lg hover:bg-gray-200 hover:text-gray-800"
+                    className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 px-4 rounded-lg font-bold hover:from-blue-600 hover:to-blue-700"
                   >
                     Refresh
                   </button>
@@ -267,7 +289,8 @@ function App() {
               {loading ? (
                 <div className="text-center py-12">
                   <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-4"></div>
-                  <p className="text-gray-600">Loading tasks...</p>
+                  <p className="text-gray-600">Loading tasks from backend...</p>
+                  <p className="text-sm text-gray-500 mt-2">From: {API_URL}</p>
                 </div>
               ) : (
                 <>
@@ -394,7 +417,7 @@ function App() {
               </div>
               <div className="bg-white rounded-xl shadow p-4">
                 <h3 className="font-bold text-gray-800 mb-2">Status Updates</h3>
-                <p className="text-sm text-gray-600">Mark tasks as complete / incomplete</p>
+                <p className="text-sm text-gray-600">Mark tasks as complete/incomplete</p>
               </div>
               <div className="bg-white rounded-xl shadow p-4">
                 <h3 className="font-bold text-gray-800 mb-2">Search & Filter</h3>
@@ -406,9 +429,9 @@ function App() {
       </main>
 
       {/* Footer */}
-      <footer className="mt-12 max-w-6xl mx-auto text-center text-gray-100 text-sm">
-        <p>To-Do List Application • React Frontend with Backend Integration</p>
-        <p className="mt-1">&copy; All Right Reserved || Utsav Rathod</p>
+      <footer className="mt-12 max-w-6xl mx-auto text-center text-gray-300 text-sm">
+        <p>Backend successfully connected to: {API_URL}</p>
+        <p className="mt-1">&copy; All Rights are Reserved || By Utsav Rathod</p>
       </footer>
     </div>
   );
