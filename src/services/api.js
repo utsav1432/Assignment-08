@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'https://todo-backend.onrender.com/api/tasks';
+const API_URL = 'https://assignment-07-092q.onrender.com/api/tasks';
 
 const api = axios.create({
   baseURL: API_URL,
